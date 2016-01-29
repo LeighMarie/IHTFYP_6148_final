@@ -1,0 +1,48 @@
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#dashboard_map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 300vh;
+  width:100%;
+}
+
+.logo_font { 
+  font-family: 'Montserrat', Arial, sans-serif; font-weight: 400; 
+  color: white !important;
+}
+
+.no_font { 
+  font-family: 'Montserrat', Arial, sans-serif; font-weight: 400; 
+  color: black !important;
+  font-size: 50px;
+}
+
+.foreground {
+  position: relative;
+}
+
+.glass {
+  font-size: 35px !important;
+  margin-right: 35px !important;
+}
+
+#verification_input {
+  width: 100%;
+}
+
+.clickable {
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+#no_matches_note {
+  position: relative;
+  text-align: center; 
+}

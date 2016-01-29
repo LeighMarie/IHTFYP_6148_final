@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ihtfyp</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="/javascripts/chardinjs.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+  <link href="/stylesheets/start_page.css" rel="stylesheet">
+  <link href="/stylesheets/chardinjs.css" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js"></script>
+  <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+  </style>
+</head>
+<body>
+  <!--CITATION Navbar: http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_navbar&stacked=h-->
+  <nav class="navbar navbar-inverse transparent navbar-static-top foreground">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand logo_font" href="#"><span class="glyphicon glyphicon-search"></span>    i have truly found your phone</a>
+      </div>
+      <div class="nav navbar-nav navbar-right">
+        <ul class="dropdown navbar-brand logo_font">
+          <div class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <div data-intro="Check out MIT's stats and your own lost and found items here!" data-position="bottom"><span class="glyphicon glyphicon-user"></span>  <%= username %> <span class="caret"></span> </div> </div>
+          <ul class="dropdown-menu">
+            <li><a href="#" id="home_button">Home</a></li>
+            <li><a href="#" id="dashboard_button">Dashboard</a></li>
+            <li><a href="#" id="d3_button">MIT's Stats</a></li> 
+            <li><a href="#" id="logout_button">Log out</a></li>
+          </ul>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="start_page_map"></div>
+
+  <!--CITATION CSS for x-large bootstrap buttons on front page: http://stackoverflow.com/questions/17638777/how-to-make-twitter-bootstrap-buttons-bigger-->
+  <div class="row">
+    <div class="col-md-6">     
+      <button class="btn btn-xlg btn-danger foreground center-block" id="lost_form_button" data-toggle="modal" data-target="#lost_modal" data-intro="If you've lost something, start here!" data-position="bottom">I have lost something.</button>
+    </div>
+    <div class="col-md-6">
+      <button class="btn btn-xlg btn-primary foreground center-block" id="found_form_button" data-toggle="modal" data-target="#found_modal" data-intro="If you've found something, start here!" data-position="bottom">I have found something.</button>
+    </div>
+  </div>
+
+  <div class = "row">
+  <div class="col-md-5"></div>
+  <div class="col-md-2">
+  <div id="matched_counter_box" data-intro="Glance at the map to see what items are currently lost and found at MIT." data-position="top">
+    <p id="matched_counter"></p> 
+  </div>
+  </div>
+  <div class="col-md-5"></div>
+  </div> 
+
+
+  <script>
+//CITATION http://stackoverflow.com/questions/404891/how-to-pass-values-from-one-page-to-another-in-jquery
+var qsParm = new Array();
+function qs() {
+    var query = window.location.search.substring(1);
+    var parms = query.split('&');
+    for (var i=0; i < parms.length; i++) {
+        var pos = parms[i].indexOf('=');
+        if (pos > 0) {
+            var key = parms[i].substring(0, pos);
+            var val = parms[i].substring(pos + 1);
+            qsParm[key] = val;
+        }
+    }
+}
+qs(); 
+if(qsParm['firsttime'] === "true") {
+  console.log("SIKKKKKKK OVERLAY TYME!!!!!!!!!!!!!!!!!!!!!!!!!");
+  $('body').chardinJs('start');
+}
+
+//CITATION Google Maps: http://www.bootply.com/106707
+//CITATION Pins on front page map: https://duncan99.wordpress.com/2011/10/08/google-maps-api-infowindows/
+    var map;
+    var marker;
+    var infowindow;
+
+
+  function bindInfoWindow(marker, map, infowindow, html) { 
+    google.maps.event.addListener(marker, 'mouseover', function() { 
+      infowindow.setContent(html); 
+      infowindow.open(map, marker); 
+    }); 
+
+    google.maps.event.addListener(marker, 'mouseout', function() {
+      infowindow.close();
+    });
+  }
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('start_page_map'), {
+        center: {lat: 42.360450, lng: -71.093675 },
+        disableDefaultUI:true,
+        zoom: 14
+      });
+
+      infowindow =  new google.maps.InfoWindow({
+          content: '',
+          display: 'none'
+      });
+    }
+
+    initMap();
+
+      $.ajax({
+          url: '/getlostmappins',
+          data: {
+          },
+          type: 'POST',
+          success: function(data) {
+            for (var i = 0; i < data.length; i++) {
+                   marker = new google.maps.Marker({
+                      icon: "images/lost_marker.png",
+                      position: new google.maps.LatLng(parseFloat(data[i]['item_location'][0]), parseFloat(data[i]['item_location'][1])),
+                      map: map
+                   });
+
+                if(data[i]['item_subcategory'] === "No subcategories") {
+                  bindInfoWindow(marker, map, infowindow, "<p>" + "Lost: " + data[i]['item_category'] + "</p>");  
+                }
+                else {
+                  bindInfoWindow(marker, map, infowindow, "<p>" + "Lost: " + data[i]['item_category']+ " > " + data[i]['item_subcategory'] + "</p>");  
+                }
+                
+                }
+                  $.ajax({
+                      url: '/getfoundmappins',
+                      data: {
+                      },
+                      type: 'POST',
+                      success: function(data) {
+                        for (var i = 0; i < data.length; i++) {
+                               marker = new google.maps.Marker({
+                                  icon: "images/found_marker.png",
+                                  position: new google.maps.LatLng(parseFloat(data[i]['item_location'][0]), parseFloat(data[i]['item_location'][1])),
+                                  map: map
+                           });
+
+              if(data[i]['item_subcategory'] === "No subcategories") {
+                bindInfoWindow(marker, map, infowindow, "<p>" + "Found: " + data[i]['item_category'] + "</p>");
+              }
+              else {
+                 bindInfoWindow(marker, map, infowindow, "<p>" + "Found: " + data[i]['item_category']+ " > " + data[i]['item_subcategory'] + "</p>");
+              }
+                        }
+
+                      },       
+                    error: function(xhr, status, error) {
+                      console.log("Uh oh there was an error: " + error);
+                      console.log(xhr.status);
+                      console.log(xhr.responseText);
+                    }
+                  });
+            },
+          error: function(xhr, status, error) {
+            console.log("Uh oh there was an error: " + error);
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+          }
+      });
+
+
+  </script>
+
+
+  <!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+  <!--CITATION Drop down in add item forms: http://stackoverflow.com/questions/11255219/use-a-javascript-array-to-fill-up-a-drop-down-select-box-->
+  <!--CITATION Dynamic drop down: http://stackoverflow.com/questions/5686735/populate-one-dropdown-based-on-selection-in-another-->
+  <!--CITATION Add Google Maps marker: http://stackoverflow.com/questions/3684274/googlemaps-v3-api-create-only-1-marker-on-click-->
+  <div id="lost_modal" class="modal fade" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content lost-modal">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-7">
+              <h3>Where did you lose this item? (Optional)</h3>
+              <div class="row">
+                  <div class="col-md-9">
+                    <input type="text" class="form-control" id="lost_address" placeholder="Click map or type address here">
+                  </div>
+                  <div class="col-md-3">
+                    <button type="button" class="btn btn-danger" id="lost_address_submit">Find</button>
+                  </div>
+              </div>
+              <div class="modal_map" id="lost_modal_map"></div>
+            </div>
+            <div class="col-md-5">
+             <h3>What kind of item was it?</h3>
+              <select class="form-control type_list" id="type_list_lost" onchange="chooseSubtype_lost(this,document.getElementById('subtype_list_lost'))">
+                <option>Accessories/Clothing</option>
+                <option>Animal</option>
+                <option>Bag</option>
+                <option>Backpack</option>
+                <option>Beauty/Toiletries</option>
+                <option>Board games</option>
+                <option>Books/Textbooks</option>
+                <option>Credit/Debit card</option>
+                <option>Electronics</option>
+                <option>Food/Drink</option>
+                <option>Homework</option>
+                <option>ID card</option>
+                <option>Keys</option>
+                <option>Kitchen</option>
+                <option>Medicine</option>
+                <option>Money</option>
+                <option>Musical instrument</option>
+                <option>Office supplies</option>
+                <option>Passport</option>
+                <option>Sports equipment</option>
+                <option>Umbrella</option>
+                <option>Wallet</option>
+                <option>Watch</option>
+                <option>Waterbottle</option>
+              </select>
+              <select class="form-control subtype_list" id="subtype_list_lost">
+                <option>Belts</option>
+                <option>Glasses</option>
+                <option>Gloves</option>
+                <option>Hair ties</option>
+                <option>Hat</option>
+                <option>Jewelry</option>
+                <option>Pants</option>
+                <option>Scarf</option>
+                <option>Shirt</option>
+                <option>Shoes</option>
+                <option>Shorts</option>
+                <option>Skirt</option>
+                <option>Socks</option>
+                <option>Sunglasses</option>
+                <option>Ties</option>
+                <option>Other</option>
+              </select> 
+              <!-- <h3>Any other details? (Optional)</h3>
+              <textarea type='text description_input'></textarea>
+              <h3>Pick a photo (Optional)</h3> 
+              <input type="file" name="photo"> -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" id="lost_modal_submit">Submit!</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Never mind.</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+
+<!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+<!--CITATION Drop down in add item forms: http://stackoverflow.com/questions/11255219/use-a-javascript-array-to-fill-up-a-drop-down-select-box-->
+<!--CITATION Dynamic drop down: http://stackoverflow.com/questions/5686735/populate-one-dropdown-based-on-selection-in-another-->
+<!--CITATION Add Google Maps marker: http://stackoverflow.com/questions/3684274/googlemaps-v3-api-create-only-1-marker-on-click-->
+  <div id="found_modal" class="modal fade" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content found-modal">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-7">
+              <h3>Where did you find this item? (Optional)</h3>
+              <div class="row">
+                  <div class="col-md-9">
+                    <input type="text" class="form-control" id="found_address" placeholder="Click map or type address here">
+                  </div>
+                  <div class="col-md-3">
+                    <button type="button" class="btn btn-primary" id="found_address_submit">Find</button>
+                  </div>
+              </div>
+              <div class="modal_map" id="found_modal_map"></div>
+            </div>
+            <div class="col-md-5">
+             <h3>What kind of item was it?</h3>
+              <select class="form-control type_list" id="type_list_found" onchange="chooseSubtype_found(this,document.getElementById('subtype_list_found'))">
+                <option>Accessories/Clothing</option>
+                <option>Animal</option>
+                <option>Bag</option>
+                <option>Backpack</option>
+                <option>Beauty/Toiletries</option>
+                <option>Board games</option>
+                <option>Books/Textbooks</option>
+                <option>Credit/Debit card</option>
+                <option>Electronics</option>
+                <option>Food/Drink</option>
+                <option>Homework</option>
+                <option>ID card</option>
+                <option>Keys</option>
+                <option>Kitchen</option>
+                <option>Medicine</option>
+                <option>Money</option>
+                <option>Musical instrument</option>
+                <option>Office supplies</option>
+                <option>Passport</option>
+                <option>Sports equipment</option>
+                <option>Umbrella</option>
+                <option>Wallet</option>
+                <option>Watch</option>
+                <option>Waterbottle</option>
+              </select>
+              <select class="form-control subtype_list" id="subtype_list_found">
+                <option>Belts</option>
+                <option>Glasses</option>
+                <option>Gloves</option>
+                <option>Hair ties</option>
+                <option>Hat</option>
+                <option>Jewelry</option>
+                <option>Pants</option>
+                <option>Scarf</option>
+                <option>Shirt</option>
+                <option>Shoes</option>
+                <option>Shorts</option>
+                <option>Skirt</option>
+                <option>Socks</option>
+                <option>Sunglasses</option>
+                <option>Ties</option>
+                <option>Other</option>
+              </select> 
+              <h3>Any other details? (Optional)</h3>
+              <textarea type='text' class='description_input' id='found_description'></textarea>
+              <!--<h3>Pick a photo (Optional)</h3> 
+              <input type="file" name="photo" id="found_photo">--> 
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" id="found_modal_submit">Submit!</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Never mind.</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+
+<script type='text/javascript'>
+  $.ajax({
+    url: '/getmatched',
+    data: {
+    },
+    type: 'POST',
+    success: function(data) {
+      $("#matched_counter").text("A total of " + data + " items have been matched so far on ihtfyp.");
+    },
+    error: function(xhr, status, error) {
+      console.log("Uh oh there was an error: " + error);
+      console.log(xhr.status);
+      console.log(xhr.responseText);
+    }
+  });
+
+  var map_lost;
+  var map_found;
+  var marker_lost;
+  var marker_found;
+
+  //CITATION Google Maps: http://www.bootply.com/106707
+
+  function initialize() {
+    var geocoder = new google.maps.Geocoder();
+
+    var mapProp = {
+        center: {lat: 42.360450, lng: -71.093675 },
+        zoom: 14,
+        mapTypeId:google.maps.MapTypeId.ROADMAP
+    };
+
+    //map = new google.maps.Map($(".modal_map"), mapProp);
+    map_lost = new google.maps.Map(document.getElementById('lost_modal_map'), mapProp);
+    map_found = new google.maps.Map(document.getElementById('found_modal_map'), mapProp);
+
+    //blue marker
+    google.maps.event.addListener(map_found,'click', function(event) {
+      placeMarker_found(event.latLng, map_found);
+    });
+
+    //red marker
+    google.maps.event.addListener(map_lost,'click', function(event) {
+      placeMarker_lost(event.latLng,map_lost);
+    });
+
+    function placeMarker_lost(location, map_type) {
+      if ( marker_lost) {
+        marker_lost.setPosition(location);
+      } 
+      else {
+        marker_lost = new google.maps.Marker({
+          icon: "images/lost_marker.png",
+          position: location,
+          map: map_type
+        });
+      }
+    }
+
+    function placeMarker_found(location, map_type) {
+      if ( marker_found) {
+        marker_found.setPosition(location);
+      } 
+      else {
+        marker_found = new google.maps.Marker({
+          icon: "images/found_marker.png",
+          position: location,
+          map: map_type
+        });
+      }
+    }
+
+    document.getElementById('lost_address_submit').addEventListener('click', function() {
+      geocodeAddress_lost(geocoder);
+    });
+
+    document.getElementById('found_address_submit').addEventListener('click', function() {
+      geocodeAddress_found(geocoder);
+    });
+
+    function geocodeAddress_lost(geocoder) {
+      var address = document.getElementById('lost_address').value;
+      geocoder.geocode({'address': address}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          placeMarker_lost(results[0].geometry.location, map_lost);
+        } else {
+          alert('Geocode was not successful for the following reason: ' + status);
+        }
+      });
+    }
+
+    function geocodeAddress_found(geocoder) {
+      var address = document.getElementById('found_address').value;
+      geocoder.geocode({'address': address}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          placeMarker_found(results[0].geometry.location, map_found);
+        } else {
+          alert('Geocode was not successful for the following reason: ' + status);
+        }
+      });
+    }
+  };
+
+  $('#lost_modal').on('show.bs.modal', function() {
+    $('#lost_address').val("");
+    marker_lost = null;
+    resizeMap_lost();
+    initialize();
+  });
+
+
+  $('#found_modal').on('show.bs.modal', function() {
+    $('#found_address').val("");
+    $('#found_description').val(""); 
+    marker_found = null
+    resizeMap_found();
+    initialize();
+  });
+
+  function resizeMap_found() {
+     if(typeof map_found =="undefined") return;
+     setTimeout( function(){resizingMap_found();} , 400);
+  }
+
+  function resizingMap_found() {
+     if(typeof map_found =="undefined") return;
+     var center = map_found.getCenter();
+     google.maps.event.trigger(map_found, "resize");
+     map_found.setCenter(center); 
+  }
+
+  function resizeMap_lost() {
+     if(typeof map_lost =="undefined") return;
+     setTimeout( function(){resizingMap_lost();} , 400);
+  }
+
+  function resizingMap_lost() {
+     if(typeof map_lost =="undefined") return;
+     var center = map_lost.getCenter();
+     google.maps.event.trigger(map_lost, "resize");
+     map_lost.setCenter(center); 
+  }
+
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+  google.maps.event.addDomListener(window, "resize", resizingMap_lost());
+  google.maps.event.addDomListener(window, "resize", resizingMap_found());
+
+  function chooseSubtype_found(typeList,subtypeList) {
+    var clothing = ['Belts', 'Glasses', 'Gloves', 'Hair ties', 'Hat', 'Jewelry', 'Pants', 'Scarf', 'Shirt', 'Shoes', 'Shorts', 'Skirt', 'Socks', 'Sunglasses', 'Ties', 'Other'];
+    var animal = ['Cat', 'Dog', 'Other'];
+    var no_subcategories = ['No subcategories'];
+    var beauty = ['Hair brush', 'Makeup', 'Nail polish', 'Other'];
+    var electronics = ['Camera', 'CD', 'Charger', 'DVD', 'Earbuds', 'Game console', 'Game controller', 'Headset', 'Headphones', 'Laptop', 'Phone', 'Speakers', 'USB flash drive', 'Vinyl', 'Other'];
+    var kitchen = ['Bowls', 'Plates', 'Utensils', 'Other']; 
+    var money = ['Cash', 'Check']; 
+    var office = ['Binder', 'Folder', 'Notebook', 'Stationary', 'Writing utensil', 'Other'];
+
+    switch (typeList.value) {
+        case 'Animal':
+          createSubtypeList(animal); 
+          break; 
+        case 'Accessories/Clothing':
+          createSubtypeList(clothing); 
+          break; 
+        case 'Beauty/Toiletries':
+          createSubtypeList(beauty); 
+          break; 
+        case 'Electronics':
+          createSubtypeList(electronics); 
+          break; 
+        case 'Kitchen':
+          createSubtypeList(kitchen); 
+          break; 
+        case 'Money':
+          createSubtypeList(money); 
+          break; 
+        case 'Office supplies':
+          createSubtypeList(office); 
+          break; 
+        default:
+          createSubtypeList(no_subcategories);
+        break;
+    }
+
+  }
+
+  function chooseSubtype_lost(typeList,subtypeList) {
+    var clothing = ['Belts', 'Glasses', 'Gloves', 'Hair ties', 'Hat', 'Jewelry', 'Pants', 'Scarf', 'Shirt', 'Shoes', 'Shorts', 'Skirt', 'Socks', 'Sunglasses', 'Ties', 'Other'];
+    var animal = ['Cat', 'Dog', 'Other'];
+    var no_subcategories = ['No subcategories'];
+    var beauty = ['Hair brush', 'Makeup', 'Nail polish', 'Other'];
+    var electronics = ['Camera', 'CD', 'Charger', 'DVD', 'Earbuds', 'Game console', 'Game controller', 'Headset', 'Headphones', 'Laptop', 'Phone', 'Speakers', 'USB flash drive', 'Vinyl', 'Other'];
+    var kitchen = ['Bowls', 'Plates', 'Utensils', 'Other']; 
+    var money = ['Cash', 'Check']; 
+    var office = ['Binder', 'Folder', 'Notebook', 'Stationary', 'Writing utensil', 'Other'];
+
+    // This is javascript. 
+    switch (typeList.value) {
+        case 'Animal':
+          createSubtypeList_lost(animal); 
+          break; 
+        case 'Accessories/Clothing':
+          createSubtypeList_lost(clothing); 
+          break; 
+        case 'Beauty/Toiletries':
+          createSubtypeList_lost(beauty); 
+          break; 
+        case 'Electronics':
+          createSubtypeList_lost(electronics); 
+          break; 
+        case 'Kitchen':
+          createSubtypeList_lost(kitchen); 
+          break; 
+        case 'Money':
+          createSubtypeList_lost(money); 
+          break; 
+        case 'Office supplies':
+          createSubtypeList_lost(office); 
+          break; 
+        default:
+          createSubtypeList_lost(no_subcategories);
+        break;
+    }
+
+  }
+
+  function createSubtypeList_lost(arr) {
+    var subtypeList = document.getElementById('subtype_list_lost');
+    $("#subtype_list_lost").empty();  
+    for(var i = 0; i < arr.length; i++) {
+      var opt = document.createElement('option');
+      opt.innerHTML = arr[i];
+      opt.value = arr[i];
+      subtypeList.appendChild(opt);
+    }
+  }
+
+//found function
+  function createSubtypeList(arr) {
+    var subtypeList = document.getElementById('subtype_list_found');
+    $("#subtype_list_found").empty();  
+    for(var i = 0; i < arr.length; i++) {
+      var opt = document.createElement('option');
+      opt.innerHTML = arr[i];
+      opt.value = arr[i];
+      subtypeList.appendChild(opt);
+    }
+  }
+
+  $('html').on("click","#logout_button", function(){
+    $.ajax({
+      url: '/logout',
+      data: {},
+      type: 'POST',
+      success: function(data) {
+        if(data === 'clear_cookies_success')
+         $(location).attr("href","https://ihtfyp.herokuapp.com");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+    });
+  });
+
+  $('html').on("click","#dashboard_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+  });
+
+  $('html').on("click","#home_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+  });
+
+  $('html').on("click","#d3_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/visualization");
+  });
+
+document.cookie= 0;
+
+  $('#lost_modal').on("click","#lost_modal_submit", function(){
+    lastTime = document.cookie;
+    curTime = (new Date()).getTime()/60000;
+    document.cookie = curTime;
+     if (curTime - lastTime > 1) {
+      var lat;
+      var lng; 
+      if(marker_lost) {
+        lat = marker_lost.getPosition().lat();
+        lng = marker_lost.getPosition().lng();
+      }
+      else {
+        lat = "none";
+        lng = "none"; 
+      }
+
+      var category = $("#type_list_lost").val(); 
+      var subcategory = $("#subtype_list_lost").val(); 
+      $.ajax({
+        url: '/addlostform',
+        data: {
+          item_category: category,
+          item_subcategory: subcategory,
+          item_lng: lng,
+          item_lat: lat
+        },
+        type: 'POST',
+        success: function(data) {
+          // if(data === "spam") {
+          //   console.log("SPAM SPAM SPAM");
+          //   alert("Item not stored because you have exceeded your limit of submitting 1 item a minute.");
+          // }
+
+          $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+        },
+        error: function(xhr, status, error) {
+          console.log("Uh oh there was an error: " + error);
+          console.log(xhr.status);
+          console.log(xhr.responseText);
+        }
+      });
+      $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+  }
+   else {
+     alert("Can only submit one form per minute!");
+   }
+  });
+
+  $('#found_modal').on("click","#found_modal_submit", function(){
+  //  console.log("submitted found modal");
+    var lat;
+    var lng; 
+    if(marker_found) {
+      lat = marker_found.getPosition().lat();
+      lng = marker_found.getPosition().lng();
+    }
+    else {
+      lat = "none";
+      lng = "none";
+    }
+    var category = $("#type_list_found").val(); 
+    var subcategory = $("#subtype_list_found").val(); 
+    var description = $("#found_description").val();
+    $.ajax({
+          url: '/addfoundform',
+          data: {
+            item_category: category,
+            item_subcategory: subcategory,
+            item_lng: lng,
+            item_lat: lat,
+            item_description: description
+          },
+          type: 'POST',
+          success: function(data) {
+          // if(data === "spam") {
+          //   console.log("SPAM SPAM SPAM");
+          //   alert("Item not stored because you have exceeded your limit of submitting 1 item a minute.");
+          // }
+            $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+          },
+          error: function(xhr, status, error) {
+            console.log("Uh oh there was an error: " + error);
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+          }
+      });
+    $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+  });
+</script>
+
+</html>

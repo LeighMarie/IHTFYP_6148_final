@@ -1,0 +1,153 @@
+html, body, #lost_modal_map  {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#viz_map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width:100%;
+}
+
+.modal_map {
+  width:500px;
+  height:480px;
+}
+
+#found_modal_map {
+  width:500px;
+  height:480px;
+  margin-top: 10px;
+}
+
+#lost_modal_map {
+  width:500px;
+  height:480px;
+  margin-top: 10px;
+}
+
+.logo_font { 
+  font-family: 'Montserrat', Arial, sans-serif; font-weight: 400; 
+  color: white !important;
+}
+
+.transparent{
+    border-width: 0px;
+    -webkit-box-shadow: 0px 0px;
+    box-shadow: 0px 0px;
+    background-color: rgba(0,0,0,0.8);
+    background-image: -webkit-gradient(linear, 50.00% 0.00%, 50.00% 100.00%, color-stop( 0% , rgba(0,0,0,0.00)),color-stop( 100% , rgba(0,0,0,0.00)));
+    background-image: -webkit-linear-gradient(270deg,rgba(0,0,0,0.00) 0%,rgba(0,0,0,0.00) 100%);
+    background-image: linear-gradient(180deg,rgba(0,0,0,0.00) 0%,rgba(0,0,0,0.00) 100%);
+}
+
+#start_page_map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width:100%;
+}
+
+.foreground {
+  position: relative;
+}
+
+
+.type_list {
+  width: 50%;
+}
+
+.subtype_list {
+  width: 50%;
+}
+
+.description_input {
+  height: 200px;
+  width: 100%;
+}
+
+.found-modal {
+  border-color: #428bca;
+  box-shadow: 0 0 50px #428bca;
+}
+
+.lost-modal {
+  border-color: #d9534f;
+  box-shadow: 0 0 50px #d9534f;
+}
+
+.legend {
+  position: relative;
+  top: 40vh !important;
+  font-size: 15px;
+  background-color: black;
+  color: white;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 15px;
+  border-color: black;
+  font-family: 'Montserrat', Arial, sans-serif; font-weight: 300; 
+  outline: none;
+  box-shadow: 0 0 10px #000000;
+}
+
+#matched_counter_box {
+  position: relative;
+  top: 70vh !important;
+  font-size: 15px;
+  background-color: black;
+  color: white;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  outline: none;
+  text-align: center;
+}
+
+#matched_counter {
+  margin-bottom: 0px; 
+}
+
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+.btn-xlg {
+    padding: 18px 28px;
+    font-size: 22px; //change this to your desired size
+    line-height: normal;
+    -webkit-border-radius: 8px;
+       -moz-border-radius: 8px;
+            border-radius: 8px;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}

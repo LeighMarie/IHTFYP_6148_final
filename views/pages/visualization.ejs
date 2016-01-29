@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ihtfyp</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="//d3js.org/d3.v3.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+  <link href="/stylesheets/start_page.css" rel="stylesheet">
+  <!-- This is from https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js -->
+  <script src="/javascripts/labrat.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js"></script>
+  <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+  </style>
+</head>
+<body style="background-color: lightgrey">
+  <!--CITATION Navbar: http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_navbar&stacked=h-->
+  <nav class="navbar navbar-inverse transparent navbar-static-top foreground">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand logo_font" id="logo" href="#"><span class="glyphicon glyphicon-search"></span>    i have truly found your phone > campus stats</a>
+      </div>
+      <div class="nav navbar-nav navbar-right">
+        <ul class="dropdown navbar-brand logo_font">
+          <div class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span>   <%= username %> <span class="caret"></span></div>
+          <ul class="dropdown-menu">
+            <li><a href="#" id="home_button">Home</a></li>
+            <li><a href="#" id="dashboard_button">Dashboard</a></li>
+            <li><a href="#" id="d3_button">MIT's Stats</a></li> 
+            <li><a href="#" id="logout_button">Log out</a></li>
+          </ul>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="viz_map"></div>
+</body>
+
+<div class="row">
+<div class="col-md-1">
+</div>
+<div class="col-md-2">
+<div class="legend" style="background-color: black">
+  <!--CITATION Checkboxes in our visualization: http://stackoverflow.com/questions/3642993/how-do-i-use-a-checkbox-to-toggle-another-element-->
+<div class="radio">
+    <label><input type="radio" name="optradio1" checked="checked" id="show_found">Show Found Items</label>
+    </div>
+<div class="radio">
+  <label><input type="radio" name="optradio1" id="show_lost">Show Lost Items</label>
+</div>
+</div>
+</div>
+<div class="col-md-2">
+  <div class="legend">
+<div class="radio">
+  <label><input type="radio" name="optradio2" checked="checked" id="show_categories">Show Item Categories</label>
+</div>
+<div class="radio">
+  <label><input type="radio" name="optradio2" id="show_subcategories">Show Item Subcategories</label>
+</div>
+</div>
+</div>
+<div class="col-md-7">
+</div>
+</div>
+
+
+<script>
+//CITATION Styled google maps: https://developers.google.com/maps/documentation/javascript/examples/maptype-styled-simple
+    function initMap() {
+      var customMapType = new google.maps.StyledMapType([
+          {
+            featureType: "all",
+            stylers: [
+              { saturation: -100 }
+            ]
+          },
+          {
+            elementType: 'labels',
+            stylers: [{visibility: 'off'}]
+          },
+          {
+            featureType: 'water',
+            stylers: [{color: '#8c8c8c'}]
+          }
+        ], {
+          name: 'Custom Style'
+      });
+      var customMapTypeId = 'custom_style';
+
+      var map = new google.maps.Map(document.getElementById('viz_map'), {
+        zoom: 14,
+        center: {lat: 42.360450, lng: -71.093675 }, 
+        disableDefaultUI:true,
+        scrollwheel:  false
+      });
+
+      map.mapTypes.set(customMapTypeId, customMapType);
+      map.setMapTypeId(customMapTypeId);
+    }
+
+    initMap(); 
+
+
+//GLOBAL VARIABLES
+var cat_dict_lost = {};
+var num_dict_lost = {};
+var cat_dict_found = {};
+var num_dict_found = {};
+var diameter;
+var bubble;
+var svg;
+var tip;
+
+$('#show_found').change(function(){
+  if($(this).is(':checked')){
+    if ($(show_categories).is(':checked')){
+      makeD3Graph(false,false, cat_dict_found,num_dict_found);
+    }
+    else {
+      makeD3Graph(false,true, cat_dict_found,num_dict_found);
+    }
+  }
+});
+
+$('#show_lost').change(function(){
+    if($(this).is(':checked')){
+    if ($(show_categories).is(':checked')){
+      makeD3Graph(true,false, cat_dict_lost,num_dict_lost);
+    }
+    else {
+      makeD3Graph(true,true, cat_dict_lost,num_dict_lost);
+    }
+  }
+});
+
+$('#show_categories').change(function(){
+  if($(this).is(':checked')){
+    if ($(show_found).is(':checked')){
+      makeD3Graph(false,false, cat_dict_found,num_dict_found);
+    }
+    else {
+      makeD3Graph(true,false, cat_dict_lost,num_dict_lost);
+    }
+  }
+});
+
+$('#show_subcategories').change(function(){
+  if($(this).is(':checked')){
+    if ($(show_found).is(':checked')){
+      makeD3Graph(false,true, cat_dict_found,num_dict_found);
+    }
+    else {
+      makeD3Graph(true,true, cat_dict_lost,num_dict_lost);
+    }
+  }
+});
+
+  $('html').on("click","#logo", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+  });
+
+  $('html').on("click","#logout_button", function(){
+    $.ajax({
+      url: '/logout',
+      data: {},
+      type: 'POST',
+      success: function(data) {
+        if(data === 'clear_cookies_success')
+         $(location).attr("href","https://ihtfyp.herokuapp.com");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+    });
+  });
+
+  $('html').on("click","#dashboard_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+  });
+
+  $('html').on("click","#home_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+  });
+
+  $('html').on("click","#d3_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/visualization");
+  });
+
+
+//CITATION Our MIT's Stats bubble chart visualization: http://bl.ocks.org/mbostock/4063269
+function makeD3Graph(isLost, isSub, cat_dict, num_dict){
+    d3.selectAll("svg > *").remove();
+    var myString = '{"name":"viz","children": [';
+    if (isSub) {
+      for (var key in Object.keys(cat_dict)) {
+        k = Object.keys(cat_dict)[key];
+        var vals = cat_dict[k];
+        myString = myString.concat('{ "name": "' + k + '","children":[');
+        if (vals.length > 0) {
+            for (var val in vals) {
+              v = vals[val];
+              num = num_dict[v];
+              myString = myString.concat('{"name":"' + v + '", "size":' + num + '},');
+            }
+            myString = myString.slice(0,-1);
+            myString = myString.concat(']},');
+        } 
+        else {
+            myString = myString.concat('{"name":"' + k + '", "size":1}]},');
+        }
+      }
+
+    }
+    else {
+      for (var key in Object.keys(num_dict)) {
+        k = Object.keys(num_dict)[key];
+        if (Object.keys(cat_dict).indexOf(k) !== -1) {
+          //console.log("{ 'name':" + k + ",'children':[{'name':" + k + ", 'size':" + num_dict[k] + "},]},");
+          myString = myString.concat('{ "name": "' + k + '","children":[{"name":"' + k + '", "size":' + num_dict[k] + '}]},');
+        }
+        //console.log("!!!!!! "+ myString);
+      }
+    }
+
+    myString = myString.slice(0,-1);
+    myString = myString.concat("]}");
+
+    var root = JSON.parse(myString);
+
+    //CITATION Visualization tooltips: http://bl.ocks.org/Caged/6476579
+    tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([-10, 0])
+      .html(function(d) {
+        return "<strong>Frequency:</strong> <span style='color:red'>" + d.value + "</span>";
+    });
+
+    svg.call(tip);
+    
+
+    var node = svg.selectAll(".node")
+        .data(bubble.nodes(classes(root))
+        .filter(function(d) { return !d.children; }))
+      .enter().append("g")
+        .attr("class", "node")
+        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+    node.append("title")
+        .text(function(d) { return d.className + ": " + format(d.value); });
+
+    node.append("circle")
+        .attr("r", function(d) { return d.r; })
+        .style("fill", function(d) { return color(d.packageName); })
+        .style("stroke", "black")
+        .style("stroke-width", "1.5"); 
+
+    node.append("text")
+        .attr("dy", ".3em")
+        .style("text-anchor", "middle")
+        .style() 
+        .attr("font-family", "Montserrat")
+        .attr("font-size", "15px")
+        .attr("fill","black")
+        .text(function(d) { return d.className.substring(0, d.r / 3); });
+    //});
+
+    // Returns a flattened hierarchy containing all leaf nodes under the root.
+    function classes(root) {
+    var classes = [];
+
+    function recurse(name, node) {
+      if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+      else classes.push({packageName: name, className: node.name, value: node.size});
+    }
+
+    recurse(null, root);
+    return {children: classes};
+    }
+
+    d3.select(self.frameElement).style("height", diameter + "px");
+
+  }
+
+  //ajax requests
+$.ajax({
+      url: '/getlostviz',
+      data: {
+      },
+      type: 'POST',
+      success: function(data_lost) {
+        var i;
+        for (i in data_lost) {
+          var item = data_lost[i];
+          if (item['item_category'] in num_dict_lost) {
+            num_dict_lost[item['item_category']] += 1
+          }
+          else {
+            num_dict_lost[item['item_category']] = 1
+          }
+          if (item['item_subcategory'] in num_dict_lost) {
+            num_dict_lost[item['item_subcategory']] += 1
+          }
+          else {
+            if ((item['item_subcategory'] !== "No subcategories") && (item['item_subcategory'] !== "Other")){
+              num_dict_lost[item['item_subcategory']] = 1;
+            }
+          }
+          //make cat dict
+          if (item['item_category'] in cat_dict_lost) {
+            if ((item['item_subcategory'] !== "No subcategories") && (cat_dict_lost[item['item_category']].indexOf(item['item_subcategory']) === -1) && (item['item_subcategory'] !== "Other")) {
+              cat_dict_lost[item['item_category']].push(item['item_subcategory']);
+             }
+          }
+          else {
+             if ((item['item_subcategory'] === "No subcategories")) {
+                cat_dict_lost[item['item_category']] = [];
+             }
+             else if (item['item_subcategory'] !== "Other"){
+              cat_dict_lost[item['item_category']] = [item['item_subcategory']];
+             }
+          }
+              }
+        $.ajax({
+          url: '/getfoundviz',
+          data: {
+          },
+          type: 'POST',
+          success: function(data_found) {
+            var i;
+            for (i in data_found) {
+              //make num dict
+              var item = data_found[i];
+              if (item['item_category'] in num_dict_found) {
+                num_dict_found[item['item_category']] += 1
+              }
+              else {
+                num_dict_found[item['item_category']] = 1
+              }
+              if (item['item_subcategory'] in num_dict_found) {
+                num_dict_found[item['item_subcategory']] += 1
+              }
+              else {
+                if ((item['item_subcategory'] !== "No subcategories") && (item['item_subcategory'] !== "Other")){
+                  num_dict_found[item['item_subcategory']] = 1;
+                }
+              }
+              //make cat dict
+              if (item['item_category'] in cat_dict_found) {
+                if ((item['item_subcategory'] !== "No subcategories") && (cat_dict_found[item['item_category']].indexOf(item['item_subcategory']) === -1) && (item['item_subcategory'] !== "Other")) {
+                  cat_dict_found[item['item_category']].push(item['item_subcategory']);
+                 }
+              }
+              else {
+                 if ((item['item_subcategory'] === "No subcategories")) {
+                    cat_dict_found[item['item_category']] = [];
+                 }
+                 else if (item['item_subcategory'] !== "Other"){
+                  cat_dict_found[item['item_category']] = [item['item_subcategory']];
+                 }
+              }
+              }
+
+          //default view is found categories
+          diameter = 750,
+            format = d3.format(",d"),
+            color = d3.scale.category20c();
+
+          bubble = d3.layout.pack()
+            .sort(null)
+            .size([diameter, diameter])
+            .padding(1.5);
+
+           svg = d3.select(".col-md-7").append("svg")
+            .attr("width", diameter)
+            .attr("height", diameter)
+            .attr("class", "bubble");
+
+
+          makeD3Graph(false,false, cat_dict_found,num_dict_found);
+
+          },
+      error: function(xhr, status, error1) {
+        console.log("Uh oh there was an error: " + error1);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+      });
+      },
+      error: function(xhr, status, error2) {
+        console.log("Uh oh there was an error: " + error2);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+});
+    
+
+</script>
+
+
+</html>

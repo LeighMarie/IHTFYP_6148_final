@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ihtfyp</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Custom styles for this template FROM BOOTSTRAP TEMPLATE-->
+    <link href="/stylesheets/signin.css" rel="stylesheet">
+    <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+    <script src="/javascripts/motio.min.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div id="panning" class="panning" position="relative"></div>
+  </body>
+  <div class="bookmark" text-align = "center">
+    <img src= "/images/logo.png" class="logo" id="logo_index">
+    <img src= "/images/info-graphic.png" class="info-graphic" >
+    <button class="btn btn-lg btn-signup" type="submit" id="signupbutton">Sign up!</button>
+  </div> 
+  <button class="btn btn-lg btn-signin" id="signinbutton">Sign in!</button>
+  <script type="text/javascript">
+  //CITATION Moving background in the front page: Motio.js
+  //CITATION Canva for our logo and our graphics on the front page: https://www.canva.com/
+  //CITATION Seamless house image that moves on the home page: http://www.youtodesign.com/Vector/Buildings/2015/0711/4062.html
+  var element = document.querySelector('#panning');
+  var panning = new Motio(element, {
+    fps: 30,  
+    speedX: -30,  
+    speedY: -30 
+  });
+  panning.play();  
+
+  $(document).ready(function() {
+  $('#signupbutton').click(function(){
+    $(".info-graphic").slideUp(); 
+    $("#signupbutton").hide(); 
+    $(".bookmark").append("<input type='text' placeholder='Email address' id='email_signup' class='form-control login'>"); 
+    $(".bookmark").append("<input type='password' placeholder='Password' id='password_signup' class='form-control login'>"); 
+    $(".bookmark").append("<input type='password' placeholder='Re-type password' id='repeat_password_signup' class='form-control login'>"); 
+    $(".bookmark").append("<button class='btn btn-lg login_button' id='submit_home_signup'>Submit</button>"); 
+    $(".bookmark").append("<div class='home_error_message' id='signup_error'>  </div>"); 
+    $(".bookmark").animate({
+        height: '-=40%'
+    }, "40%");
+    $(".logo").css("height", "30%");
+  });
+
+  var signin_visible = false; 
+  $("#signinbutton").click(function(){
+    if(!signin_visible) {
+      signin_visible = true; 
+      $("html").append("<div class='signin_div'></div>");  
+      $(".signin_div").append("<input type='text' placeholder='Email address' id='email_signin' class='form-control signin' name='username'>"); 
+      $(".signin_div").append("<input type='password' placeholder='Password' id='password_signin' class='form-control signin' name='password'>"); 
+      $(".signin_div").append("<button class='btn btn-lg signin_button' id='submit_home_signin'>Submit</button>");
+      $(".signin_div").append("<div class='home_error_message' id='signin_error'>  </div>");  
+    }
+  });
+
+  $('.bookmark').on("click","#submit_home_signup", function(){
+    var email = $('#email_signup').val();
+    var password1 = $('#password_signup').val();
+    var password2 = $('#repeat_password_signup').val();
+    //verify email of semi-correct format
+    emailAtIndex = email.indexOf("@");
+    emailDotIndex = email.lastIndexOf(".");
+    if ((emailAtIndex !== -1) && (emailDotIndex !== -1) && (emailAtIndex < emailDotIndex)) {
+      $('#signup_error').text("  ");
+      //verify passwords match
+      if (password1 !== password2){
+        $('#signup_error').text("  ");
+        $('#signup_error').text('Passwords do not match');
+        $('#password_signup').val("");
+        $('#repeat_password_signup').val("");
+      }
+      else if (password1.length === 0) {
+        $('#signup_error').text("  ");
+        $('#signup_error').text('No password was entered');
+      }
+      else { //SUCCESS
+        //console.log("new user submitted email and password " + email + " " + password1);
+        $.ajax({
+          url: '/adduser',
+          data: {
+            username: email,
+            password: password1
+          },
+          type: 'POST',
+          success: function(data) {
+            //console.log("data is " + data);
+            if(data === "username_exists") {
+              $('#signup_error').text('Username already exists.'); 
+              $('#email_signup').val("");
+              $('#password_signup').val("");
+              $('#repeat_password_signup').val("");
+            }
+            else if(data === 'username_added'){
+             // console.log(email + " " + password1 + " successfully posted"); 
+              $(location).attr("href","https://ihtfyp.herokuapp.com/start_page?firsttime=true"); //donut
+            }
+          },
+          error: function(xhr, status, error) {
+            console.log("Uh oh there was an error: " + error);
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+          }
+        });
+      }
+    }
+    else {
+      $('#signup_error').text("  ");
+      $('#signup_error').text('Email not valid')
+      $('#email_signup').val("");
+      $('#password_signup').val("");
+      $('#repeat_password_signup').val("");
+    }
+  });
+
+  $('html').on("click","#submit_home_signin", function(){
+    var email = $('#email_signin').val();
+    var password = $('#password_signin').val();
+    $('#signin_error').text("");
+
+    if(email === "pusheen" && password === "pusheen") {
+      $("#logo_index").attr("src", "/images/pusheengif.gif");
+    }
+
+    //console.log("maybe-exisiting user submitted email and password" + email + " " + password);
+    $.ajax({
+      url: '/checkuser',
+      data: {
+        username: email,
+        password: password
+      },
+      type: 'POST',
+      success: function(data) {
+        if (data === "start_page"){
+          $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+        } 
+        else {
+          $('#signin_error').text(data);
+          $('#email_signin').val("");
+          $('#password_signin').val("");
+        }
+        //alert(data); 
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+    });
+  });
+  });
+  </script>
+</html>

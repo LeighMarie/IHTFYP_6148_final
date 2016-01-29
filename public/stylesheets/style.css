@@ -1,0 +1,192 @@
+html,body {padding:0; margin:0;}
+
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  overflow: hidden;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.panning {
+    width: auto; 
+    height: 1000px;
+    background: url('/images/houses_bw.png');
+}
+
+.logo {
+  /*min-height:20%;
+  height:25%;
+  left: 25% ;
+  top: 8%;
+  position: relative;*/
+  display:block;
+  margin-left: auto;
+  margin-right:auto;
+  height: 15%;
+} 
+
+.info-graphic {
+  display:block;
+  margin-left: auto;
+  margin-right:auto;
+  height: 75%;
+} 
+
+.login {
+  top: 20%;
+  position: relative;
+  display:block;
+  margin-left: auto;
+  margin-right:auto;
+  width: 85% !important;
+}
+
+.login_button {
+  font-family: Helvetica;
+  color: white;
+  background-color: #e63900;
+  border-color:#e63900;
+  border-style:solid;
+  width: 85% !important;
+  margin-left: auto;
+  margin-right:auto;
+  position: relative;
+  font-weight: bold;
+  top: 140px !important;
+}
+
+#signup_error {
+  font-family: Helvetica;
+  margin-left: auto;
+  margin-right:auto;
+  position: relative;
+  font-weight: bold;
+  color: red;
+  top: 170px !important;
+}
+
+#signin_error {
+  font-family: Helvetica;
+  margin-left: auto;
+  margin-right:auto;
+  position: relative;
+  font-weight: bold;
+  color: red;
+  top: 90px !important;
+}
+
+.signin_button {
+  font-family: Helvetica;
+  color: white;
+  background-color: #e63900;
+  border-color:#e63900;
+  border-style:solid;
+  width: 85% !important;
+  margin-left: auto;
+  margin-right:auto;
+  position: relative;
+  font-weight: bold;
+  top: 75px !important;
+}
+
+.bookmark {
+  background-color: #ffffff;
+  height: 100vh;
+  width: 25%;
+  position: absolute;
+  top: 0;
+  left: 10%;
+  text-align: center;
+  outline: none;
+  border-color: #9ecaed;
+  box-shadow: 0 0 40px #000000;
+  min-width: 350px;
+  min-height: 600px;
+}
+
+.btn-signin {
+  position: absolute;
+  top: 3%;
+  left: 92%;
+  font-family: Helvetica;
+  color: white;
+  background-color: #e63900;
+  border-color:#e63900;
+  display:block;
+  font-weight: bold;
+}
+
+.btn-signup {
+  font-family: Helvetica;
+  color: white;
+  background-color: #e63900;
+  border-color:#e63900;
+  border-style:solid;
+  top : 20px;
+  position: relative;
+  width: 85% !important;
+  margin-left: auto;
+  margin-right:auto;
+  position: relative;
+  font-weight: bold;
+}
+
+.signin_div {
+  background-color: #ffffff;
+  height: 25vh;
+  width: 25%;
+  position: absolute;
+  top: 10%;
+  left: 73%;
+  border-radius: 10%;
+  text-align: center;
+  outline: none;
+  border-color: #9ecaed;
+  box-shadow: 0 0 40px #000000;
+  min-height: 200px; 
+}
+
+.signin {
+  top: 20%;
+  position: relative;
+  display:block;
+  margin-left: auto;
+  margin-right:auto;
+  width: 85% !important;
+}
+/*.tagline {
+  text-align: center;
+  font-family: Trebuchet;
+  color: gray;
+  font-size: 17pt;
+  font-weight: bold;
+} */
+
+/* #homeModal {
+	top: 30%;
+	right:0%;
+	outline:none;
+} */
+
+/*stack overflow*/
+#homeModal {
+  text-align: center;
+}
+@media screen and (min-width: 768px) { 
+  #homeModal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+  }
+}
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+/* end stack overflow */
+
+

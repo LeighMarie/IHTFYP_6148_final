@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ihtfyp</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+  <link href="/stylesheets/dashboard.css" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js"></script>
+</head>
+<body>
+  <!--CITATION Navbar: http://www.w3schools.com/bootstrap/tryit.asp?filename=trybs_navbar&stacked=h-->
+  <nav class="navbar navbar-inverse transparent navbar-static-top foreground">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand logo_font" id="logo" href="#"><span class="glyphicon glyphicon-search"></span>    i have truly found your phone > dashboard</a>
+      </div>
+      <div class="nav navbar-nav navbar-right">
+        <ul class="dropdown navbar-brand logo_font">
+          <div class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span>   <%= username %> <span class="caret"></span></div>
+          <ul class="dropdown-menu">
+            <li><a href="#" id="home_button">Home</a></li>
+            <li><a href="#" id="dashboard_button">Dashboard</a></li>
+            <li><a href="#" id="d3_button">MIT's Stats</a></li> 
+            <li><a href="#" id="logout_button">Log out</a></li>
+          </ul>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="dashboard_map"></div>
+
+  <div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+      <p id="no_matches_note" class="no_font"></p> 
+
+    </div>
+    <div class="col-md-2"></div>
+  </div> 
+
+  <!-- Verification Modal -->
+  <!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+  <div class="modal fade" id="verificationModal" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="verification-header" text-align="center"></h4>
+        </div>
+        <div class="modal-body" text-align="center">
+          <p id="verification_info"> </p>
+          <div class "row"> <p></p> </div>
+          <div class "row"> <p></p> </div>
+          <div class "row"><p id="verification_question"></p></div>
+          <div class "row"><input id="verification_input" class="form-control"></div>
+        </div>
+        <div class="modal-footer">
+          <p id = "verification-footer" style="color:red;text-align:left"></p>
+          <button type="button" class="btn btn-default" id="verification_submit">Submit!</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Answer Verification Modal -->
+  <!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+  <div class="modal fade" id="answer_verification_modal" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" text-align="center">Confirm verification answer</h4>
+        </div>
+        <div class="modal-body" text-align="center">
+          <p id="answer_verification_information"> </p>
+          <div class "row"> <p></p> </div>
+          <div class "row"> <p></p> </div>
+          <div class "row"><p id="verification_answer"></p></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="answer_verification_yes">Yes!</button>
+          <button type="button" class="btn btn-default" id="answer_verification_no">No.</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Delete Lost Panel Modal -->
+  <!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+  <!--CITATION Delete panels: http://bootsnipp.com/snippets/featured/close-panel-effects-->
+  <div class="modal fade" id="deleteLostPanelModal" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" text-align="center">Are you sure you want to delete this item?</h4>
+        </div>
+        <div class="modal-body" text-align="center">
+          <p>Please let us know why!</p> 
+          <div class="radio">
+            <label><input type="radio" name="optradio" checked="checked" id="matched_delete">I arranged a pickup and got my item!</label>
+          </div>
+          <div class="radio">
+            <label><input type="radio" name="optradio" id="unmatched_delete">There's another reason I want to stop looking for my item.</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="delete_lost_item_yes">Confirm</button>
+          <button type="button" class="btn btn-default" id="delete_lost_item_no">Cancel</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Delete Found Panel Modal -->
+  <!--CITATION Modal: http://www.w3schools.com/bootstrap/bootstrap_modal.asp and http://jsfiddle.net/sRmLV/53/-->
+  <!--CITATION Delete panels: http://bootsnipp.com/snippets/featured/close-panel-effects-->
+  <div class="modal fade" id="deleteFoundPanelModal" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" text-align="center">Are you sure you want to delete this item?</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="delete_found_item_yes">Confirm</button>
+          <button type="button" class="btn btn-default" id="delete_found_item_no">Cancel</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+
+  //CITATION Google Maps: http://www.bootply.com/106707
+  //CITATION Styled google maps: https://developers.google.com/maps/documentation/javascript/examples/maptype-styled-simple
+    function initMap() {
+      var customMapType = new google.maps.StyledMapType([
+          {
+            featureType: "all",
+            stylers: [
+              { saturation: -100 }
+            ]
+          },
+          {
+            elementType: 'labels',
+            stylers: [{visibility: 'off'}]
+          },
+          {
+            featureType: 'water',
+            stylers: [{color: '#8c8c8c'}]
+          }
+        ], {
+          name: 'Custom Style'
+      });
+      var customMapTypeId = 'custom_style';
+
+      var map = new google.maps.Map(document.getElementById('dashboard_map'), {
+        zoom: 14,
+        center: {lat: 42.360450, lng: -71.093675 }, 
+        disableDefaultUI:true,
+        scrollwheel:  false
+      });
+
+      map.mapTypes.set(customMapTypeId, customMapType);
+      map.setMapTypeId(customMapTypeId);
+    }
+
+    initMap(); 
+  </script>
+
+</body>
+<script>
+  $(document).ready(function(){
+    $.ajax({
+        url: '/getlost',
+        data: { },
+        type: 'POST',
+        success: function(data) {
+          var lost_arr = JSON.parse(data); 
+          for(var i = 0; i < lost_arr.length; i++) {
+            
+            var lost_id = lost_arr[i]['_id']; 
+            var category = lost_arr[i]['item_category']; 
+            var subcategory = lost_arr[i]['item_subcategory']; 
+            if(subcategory === "No subcategories")
+              subcategory = ""; 
+
+            var content = "";
+            var matches_arr = lost_arr[i]["found_matches_list"];
+
+            for(var j = 0; j < matches_arr.length; j++) {
+              var match_id_arr = Object.keys(matches_arr[j]);
+              var match_id = match_id_arr[0];
+              var status = matches_arr[j][match_id]; 
+
+              
+              if(status === 'red') {
+                if(subcategory === "") {
+                  content += ("<a href='#' class='glass red_glass' data-toggle='tooltip' title='New match! Click to send verification.' lost_id='"+lost_id+ "' found_id='"+match_id +"' item_category='" + category + "'><span class='glyphicon glyphicon-search glass' style='color:#d9534f'></span></a>");
+                }
+                else {
+                  content += ("<a href='#' class='glass red_glass' data-toggle='tooltip' title='New match! Click to send verification.' lost_id='"+lost_id+ "' found_id='"+match_id +"' item_category='" + category + "' item_subcategory='" +  subcategory + "'><span class='glyphicon glyphicon-search glass' style='color:#d9534f'></span></a>");
+                }
+              }
+              else if(status === 'gray')
+                content += ("<a href='#' class='glass' data-toggle='tooltip' title='Pending confirmation. We will keep you updated via email!'><span class='glyphicon glyphicon-search glass' style='color:gray'  margin-right: '10px'></span></a>");
+              else 
+                content += ("<a href='#' class='glass' data-toggle='tooltip' title='Matched! Check your email to arrange pickup.'><span class='glyphicon glyphicon-search glass' style='color:#428bca'  margin-right: '10px'></span></a>");
+            }
+
+            if(matches_arr.length == 0) {
+              content = "No matches yet. We will send you an email when this updates!"
+            }
+
+            if(subcategory !== "")
+              subcategory = "   >   " + subcategory; 
+            $(".col-md-8").append("<div class='panel panel-danger foreground' id='" + lost_id+ "'> <div class='panel-heading'> <h1 class='panel-title'>" + category + subcategory + "<span class='pull-right clickable open-delete-lost' panel_id='" + lost_id + "'><span class='glyphicon glyphicon-remove'></span></span></h1></div><div class='panel-body'>" + content + "</div></div>");  
+          }
+
+
+          $.ajax({
+                  url: '/getfound',
+                  data: { },
+                  type: 'POST',
+                  success: function(data) {
+                    var found_arr = JSON.parse(data); 
+                    if(lost_arr.length + found_arr.length === 0) {
+                      $("#no_matches_note").text("You don't have any lost or found items yet."); 
+                    }
+
+                    for(var i = 0; i < found_arr.length; i++) {
+                      var found_id = found_arr[i]['_id']; 
+                      var category = found_arr[i]['item_category']; 
+                      var subcategory = "   >   " + found_arr[i]['item_subcategory']; 
+                      if(subcategory === "   >   No subcategories")
+                        subcategory = ""; 
+
+                      var content = "";
+                      var matches_arr = found_arr[i]["lost_matches_list"];
+                      var matches_length = 0; 
+
+                      for(var j = 0; j < matches_arr.length; j++) {
+                        var match_id_arr = Object.keys(matches_arr[j]);
+                        var match_id = match_id_arr[0];
+                        var status = matches_arr[j][match_id]; 
+
+
+                        if(status === 'red') {
+                          content += ("<a href='#' class='glass answer_verification' data-toggle='tooltip' title='New match! Click to send verification.' lost_id='" + match_id + "' found_id='" + found_id + "'><span class='glyphicon glyphicon-search glass' style='color:#d9534f' margin-right: '10px'></span></a>");
+                          matches_length++; 
+                        }
+                        else if (status === 'blue'){
+                          content += ("<a href='#' class='glass' data-toggle='tooltip' title='Matched! You might be emailed soon to arrange a pickup.'><span class='glyphicon glyphicon-search glass' style='color:#428bca'  margin-right: '10px'></span></a>");
+                          matches_length++; 
+                        }
+                        // else {
+                        //   content += ("<a href='#' class='glass'><span class='glyphicon glyphicon-search glass' style='color:gray'  margin-right: '10px'></span></a>");
+                        // }
+                      }
+
+                      if(matches_arr.length == 0 || matches_length == 0)
+                        content = "No matches yet. We will send you an email when this updates!"
+
+                      $(".col-md-8").append("<div class='panel panel-info foreground' id='" + found_id + "'> <div class='panel-heading'> <h1 class='panel-title'>" + category + subcategory + "<span class='pull-right clickable open-delete-found' panel_id='" + found_id + "'><span class='glyphicon glyphicon-remove'></span></span></h1></div><div class='panel-body'>" + content + "</div></div>"); 
+                    }
+                  },
+                  error: function(xhr, status, error) {
+                    console.log("Uh oh there was an error: " + error);
+                    console.log(xhr.status);
+                    console.log(xhr.responseText);
+                  }
+              });
+        },
+        error: function(xhr, status, error) {
+          console.log("Uh oh there was an error: " + error);
+          console.log(xhr.status);
+          console.log(xhr.responseText);
+        }
+    });
+  });
+
+  $('[data-toggle="tooltip"]').tooltip();   
+  $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+
+  $('html').on("click","#logout_button", function(){
+    $.ajax({
+      url: '/logout',
+      data: {},
+      type: 'POST',
+      success: function(data) {
+        if(data === 'clear_cookies_success')
+         $(location).attr("href","https://ihtfyp.herokuapp.com");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+    });
+  });
+
+  $('html').on("click","#home_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+  });
+
+  $('html').on("click","#dashboard_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/dashboard");
+  });
+
+  $('html').on("click","#logo", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/start_page");
+  });
+
+  $('html').on("click","#d3_button", function(){
+    $(location).attr("href","https://ihtfyp.herokuapp.com/visualization");
+  });
+
+  $('html').on("click", ".answer_verification", function() {
+    var lost_id = $(this).attr('lost_id'); 
+    var found_id = $(this).attr('found_id'); 
+    $.ajax({
+      url: '/answerverification',
+      data: {
+        'lost_id': lost_id, 
+        'found_id': found_id 
+      },
+      type: 'POST',
+      success: function(data) {
+        var verification_data = JSON.parse(data);
+        var verification_answer = verification_data[0]['verification_text'];
+        $("#answer_verification_modal").modal();
+        $('#verification_answer').text(verification_answer);
+        $("#answer_verification_information").text("Someone answered a verification question regarding their lost item! Please confirm if their description matches the appearance of the item that you found.");
+        $("#answer_verification_yes").attr("lost_id",lost_id);
+        $("#answer_verification_yes").attr("found_id",found_id);
+        $("#answer_verification_no").attr("lost_id",lost_id);
+        $("#answer_verification_no").attr("found_id",found_id);
+        // $("#verification_submit").attr("lost_id",lost_id);
+        // $("#verification_submit").attr("found_id",found_id);
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+    });
+  });
+
+  $('html').on("click",".red_glass", function(){
+    var category = $(this).attr('item_category');
+    var lost_id = $(this).attr('lost_id'); 
+    var found_id = $(this).attr('found_id'); 
+    if(category === "Beauty/Toiletries" || category === "Electronics") {
+      createModal("What color(s) or brand is it?",category,found_id,lost_id);
+    } 
+    else if(category === "Board games") {
+      createModal("What game is it?", category,found_id,lost_id);
+    }
+    else if(category === "Food/Drink") {
+      createModal("What kind of food or drink is it?", category,found_id,lost_id); 
+    }
+    else if(category === "Medicine") {
+      createModal("What kind of medicine is it?", category,found_id,lost_id);
+    }
+    else if(category === "Homework") {
+     createModal("What subject is it?", category,found_id,lost_id);
+    }
+    else if(category === "ID card") {
+      createModal("What's the ID number or full name on the card?", category,found_id,lost_id);
+    }
+    else if(category === "Keys") {
+      createModal("What color were the keys? Or, how many?", category,found_id,lost_id);
+    }
+    else if(category === "Books/Textbooks") {
+      createModal("What is the title of the book?", category,found_id,lost_id);
+    }
+    else if(category === "Credit/Debit card") {
+      createModal("What is your full name on the card, and what kind of card is it? (example: Visa)", category,found_id,lost_id);
+    }
+    else if(category === "Money") {
+      createModal("Around what amount of money did you lose?", category,found_id,lost_id);
+    }
+    else if(category === "Musical instrument") {
+      createModal("What kind of instrument is it?", category,found_id,lost_id);
+    }
+    else if(category === "Office supplies") {
+      createModal("What kind of color or brand is it?", category,found_id,lost_id);
+    }
+    else if(category === "Passport") {
+      createModal("What is the full legal name and date of birth on the passport?", category,found_id,lost_id);
+    }
+    else if(category === "Sports equipment") {
+      createModal("What color(s) or brand is it?", category,found_id,lost_id);
+    }
+    else if(category === "Wallet") {
+      createModal("What color(s) is it? What are its contents?", category,found_id,lost_id);
+    }
+    else if(category === "Watch") {
+      createModal("What color(s) or brand is your watch?", category,found_id,lost_id);
+    }
+    else if(category === "Waterbottle") {
+      createModal("What color(s) or brand is your waterbottle?", category,found_id,lost_id);
+    }
+    else {
+      createModal("What color(s) is it?", category,found_id,lost_id);
+    }
+  });
+
+function createModal(modal_text, category,found_id,lost_id) {
+  //make a modal
+  $("#verificationModal").modal();
+  $('#verification_question').text(modal_text);
+  $("#verification-header").text("Verification question for your lost "+category.toLowerCase());
+  $("#verification_info").text("We'll send your answer to be confirmed by the person who (hopefully) found your item!");
+  $("#verification_submit").attr("lost_id",lost_id);
+  $("#verification_submit").attr("found_id",found_id);
+  //explain verification method
+  //set the text to modal_text
+  //make submit button
+}
+
+ $('html').on("click", "#verification_submit", function(){
+  //get text
+  var lost_answer = $("#verification_input").val();
+  if (lost_answer !== "") {
+  $("#verificationModal").modal('hide'); 
+  var lost_id = $(this).attr('lost_id'); 
+  var found_id = $(this).attr('found_id'); 
+  //populate the verification collection 
+  //(found_id, lost_id, verification_text)
+  $.ajax({
+      url: '/addverification',
+      data: {
+        'lost_id': lost_id,
+        'found_id': found_id,
+        'verification_text': lost_answer
+      },
+      type: 'POST',
+      success: function(data) {
+        //console.log("successfully sent verification!");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+  });
+
+  location.reload();
+  }
+  else {
+    $("#verification-footer").text("Please briefly describe your lost item.");
+  }
+});
+
+$('html').on("click", "#answer_verification_yes", function(){
+  var lost_id = $(this).attr('lost_id'); 
+  var found_id = $(this).attr('found_id'); 
+  $("#answer_verification_yes").modal('hide');
+  $.ajax({
+      url: '/yesverification',
+      data: {
+        'lost_id': lost_id,
+        'found_id': found_id
+      },
+      type: 'POST',
+      success: function(data) {
+        //console.log("successfully sent yes verification!");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+  });
+location.reload();
+});
+
+$('html').on("click", "#answer_verification_no", function(){
+  var lost_id = $(this).attr('lost_id'); 
+  var found_id = $(this).attr('found_id'); 
+  $("#answer_verification_no").modal('hide');
+  $.ajax({
+      url: '/noverification',
+      data: {
+        'lost_id': lost_id,
+        'found_id': found_id
+      },
+      type: 'POST',
+      success: function(data) {
+        //console.log("successfully sent no verification!");
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+  });
+location.reload();
+});
+
+$('html').on("click", "#delete_lost_item_yes", function(){
+  var panel_id = $(this).attr('panel_id'); 
+
+  $("#deleteLostPanelModal").modal('hide'); 
+
+  if($("#matched_delete").prop('checked')) {
+    $.ajax({
+        url: '/deletelostyesmatch',
+        data: {
+          'lost_id': panel_id
+        },
+        type: 'POST',
+        success: function(data) {
+
+        },
+        error: function(xhr, status, error) {
+          console.log("Uh oh there was an error: " + error);
+          console.log(xhr.status);
+          console.log(xhr.responseText);
+        }
+    });
+  }
+  else {
+    $.ajax({
+        url: '/deletelostnomatch',
+        data: {
+          'lost_id': panel_id
+        },
+        type: 'POST',
+        success: function(data) {
+        },
+        error: function(xhr, status, error) {
+          console.log("Uh oh there was an error: " + error);
+          console.log(xhr.status);
+          console.log(xhr.responseText);
+        }
+    });
+  }
+
+  location.reload();
+});
+
+$('html').on("click", "#delete_lost_item_no", function(){
+  var panel_id = $(this).attr('panel_id'); 
+
+  $("#deleteLostPanelModal").modal('hide'); 
+});
+
+$('html').on("click", "#delete_found_item_yes", function(){
+  var panel_id = $(this).attr('panel_id'); 
+
+  $("#deleteFoundPanelModal").modal('hide'); 
+
+  $.ajax({
+      url: '/deletefound',
+      data: {
+        'found_id': panel_id
+      },
+      type: 'POST',
+      success: function(data) {
+      },
+      error: function(xhr, status, error) {
+        console.log("Uh oh there was an error: " + error);
+        console.log(xhr.status);
+        console.log(xhr.responseText);
+      }
+  });
+  location.reload();
+});
+
+$('html').on("click", "#delete_found_item_no", function(){
+  var panel_id = "#" + $(this).attr('panel_id'); 
+
+  console.log(panel_id);
+
+  $("#deleteFoundPanelModal").modal('hide'); 
+});
+
+$('html').on("click", ".open-delete-found", function () {
+     var panel_id = $(this).attr('panel_id');
+     $("#delete_found_item_no").attr('panel_id', panel_id);
+     $("#delete_found_item_yes").attr('panel_id', panel_id);
+     $('#deleteFoundPanelModal').modal('show');
+});
+
+$('html').on("click", ".open-delete-lost", function () {
+     var panel_id = $(this).attr('panel_id');
+     $("#delete_lost_item_no").attr('panel_id', panel_id);
+     $("#delete_lost_item_yes").attr('panel_id', panel_id);
+     $('#deleteLostPanelModal').modal('show');
+});
+
+</script>
+</html>
